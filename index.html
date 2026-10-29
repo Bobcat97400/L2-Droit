@@ -1,0 +1,783 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Juris L2</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@500;700;800&family=Nunito:wght@500;600;700;800&display=swap">
+<style>
+/* Layout : une app mobile dans un cadre de téléphone posé sur un dégradé bleu→violet, navigation en bas, leçons plein écran façon Duolingo */
+:root{
+  --bg1:#2F7BEA; --bg2:#7A5BE3;
+  --app:#E9F0FE; --card:#FFFFFF; --soft:#D7E4FD; --line:#C6D6F6;
+  --ink:#0C1A45; --muted:#56689A;
+  --primary:#2563EB; --primary-2:#1D4FD0; --on-primary:#FFFFFF;
+  --hero1:#3171EE; --hero2:#1E56DA; --on-hero:#FFFFFF; --hero-soft:rgba(255,255,255,.16); --hero-deep:rgba(8,30,110,.28);
+  --ok:#15803D; --ok-bg:#D9F7E3; --bad:#C62828; --bad-bg:#FDE1E1;
+  --gold:#E8A20C; --heart:#E5484D; --locked:#B8C4DE;
+  --c1:#0EA5A0; --c2:#E0457B; --c3:#E08A0B; --c4:#7C5CE6;
+  --frame:rgba(255,255,255,.38);
+  --display:"Rubik", "Avenir Next", system-ui, sans-serif;
+  --body:"Nunito", "Segoe UI", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg1:#163A86; --bg2:#3C2A80;
+  --app:#0E1631; --card:#16213F; --soft:#1E2C55; --line:#2A3B69;
+  --ink:#E8EEFF; --muted:#9DAED6;
+  --primary:#4C82F7; --primary-2:#3B6FE6; --on-primary:#FFFFFF;
+  --hero1:#2D63DE; --hero2:#1C47B8; --on-hero:#FFFFFF;
+  --ok:#4ADE80; --ok-bg:#0F3A24; --bad:#FF7B7B; --bad-bg:#45171C;
+  --gold:#FBBF24; --heart:#FF6B70; --locked:#3A4A75;
+  --c1:#2DD4BF; --c2:#F472B6; --c3:#FBBF24; --c4:#A78BFA;
+  --frame:rgba(255,255,255,.14); color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --bg1:#163A86; --bg2:#3C2A80;
+  --app:#0E1631; --card:#16213F; --soft:#1E2C55; --line:#2A3B69;
+  --ink:#E8EEFF; --muted:#9DAED6;
+  --primary:#4C82F7; --primary-2:#3B6FE6; --on-primary:#FFFFFF;
+  --hero1:#2D63DE; --hero2:#1C47B8; --on-hero:#FFFFFF;
+  --ok:#4ADE80; --ok-bg:#0F3A24; --bad:#FF7B7B; --bad-bg:#45171C;
+  --gold:#FBBF24; --heart:#FF6B70; --locked:#3A4A75;
+  --c1:#2DD4BF; --c2:#F472B6; --c3:#FBBF24; --c4:#A78BFA;
+  --frame:rgba(255,255,255,.14); color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  background:linear-gradient(160deg,var(--bg1),var(--bg2)); background-color:var(--bg1);
+  color:var(--ink); font-family:var(--body); font-size:15px;
+  display:flex; justify-content:center; align-items:center;
+  padding-block:20px;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));
+  padding-right:max(16px, env(safe-area-inset-right, 0px));
+}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+button:focus-visible,input:focus-visible,summary:focus-visible{outline:3px solid var(--primary);outline-offset:2px}
+h1,h2,h3{font-family:var(--display);margin:0;text-wrap:balance}
+
+.phone{
+  position:relative; width:100%; max-width:440px; height:100%; max-height:900px;
+  background:var(--app); border-radius:40px; border:10px solid var(--frame);
+  background-clip:padding-box; overflow:hidden; display:flex; flex-direction:column;
+  box-shadow:0 30px 60px -20px rgba(10,20,70,.45);
+}
+.screen{flex:1; overflow-y:auto; padding:22px 20px 26px; scrollbar-width:thin}
+.view{display:flex; flex-direction:column; gap:18px}
+.top{display:flex; justify-content:space-between; align-items:baseline; gap:12px}
+.top h1{font-size:30px; font-weight:800}
+.top .sub{color:var(--muted); font-weight:600; font-size:14px; text-align:right}
+
+/* Nav */
+.nav{display:grid; grid-template-columns:repeat(5,1fr); gap:4px; background:var(--card); padding:8px 8px 12px; border-top:1px solid var(--line)}
+.nav button{display:flex; flex-direction:column; align-items:center; gap:3px; padding:8px 2px; border-radius:16px; color:var(--muted); font-size:12px; font-weight:700}
+.nav button svg{width:24px;height:24px}
+.nav button[aria-current="page"]{background:var(--soft); color:var(--primary)}
+svg.i{fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round}
+
+/* Hero */
+.hero{background:linear-gradient(160deg,var(--hero1),var(--hero2)); color:var(--on-hero); border-radius:30px; padding:22px 18px 18px; display:flex; flex-direction:column; align-items:center; gap:18px}
+.ring{position:relative; width:180px; height:180px}
+.ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.ring .lbl{position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center}
+.ring .big{font-family:var(--display); font-weight:800; font-size:48px; line-height:1; font-variant-numeric:tabular-nums}
+.ring .small{font-weight:700; font-size:14px; opacity:.9; margin-top:4px}
+.stats{width:100%; display:grid; grid-template-columns:repeat(3,1fr); background:var(--hero-deep); border-radius:20px; padding:14px 6px}
+.stat{display:flex; flex-direction:column; align-items:center; gap:4px; text-align:center}
+.stat b{font-family:var(--display); font-size:22px; font-variant-numeric:tabular-nums; display:flex; align-items:center; gap:5px}
+.stat span{font-size:13px; font-weight:700; opacity:.92}
+.stat svg{width:18px;height:18px}
+
+.btn{display:flex; align-items:center; justify-content:center; gap:8px; background:var(--primary); color:var(--on-primary); font-family:var(--display); font-weight:700; font-size:17px; padding:15px 18px; border-radius:18px; box-shadow:0 4px 0 var(--primary-2); transition:transform .08s}
+.btn:active{transform:translateY(3px); box-shadow:0 1px 0 var(--primary-2)}
+.btn[disabled]{background:var(--locked); box-shadow:none; cursor:not-allowed; color:var(--card)}
+.btn.ghost{background:var(--card); color:var(--primary); box-shadow:0 4px 0 var(--line)}
+
+.continue{background:var(--card); border-radius:24px; padding:16px; display:flex; flex-direction:column; gap:12px}
+.eyebrow{font-size:12px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--muted)}
+.continue h3{font-size:19px}
+
+.subjects{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+.subj{background:var(--card); border-radius:22px; padding:14px; text-align:left; display:flex; flex-direction:column; gap:8px; min-width:0}
+.subj .dot{width:34px;height:34px;border-radius:12px;display:grid;place-items:center;color:var(--card);font-family:var(--display);font-weight:800}
+.subj h3{font-size:15px}
+.subj small{color:var(--muted); font-weight:700; font-size:12px}
+.bar{height:8px; background:var(--soft); border-radius:99px; overflow:hidden}
+.bar i{display:block; height:100%; border-radius:99px; transition:width .4s}
+
+.word{background:var(--card); border-radius:24px; padding:16px 18px; display:flex; flex-direction:column; gap:6px}
+.word h3{font-size:20px; color:var(--primary)}
+.word p{margin:0; line-height:1.5}
+
+/* Chips */
+.chips{display:flex; gap:8px; overflow-x:auto; padding-bottom:2px; scrollbar-width:none}
+.chip{flex:none; padding:10px 16px; border-radius:22px; background:var(--soft); color:var(--primary); font-family:var(--display); font-weight:700; font-size:15px; display:flex; flex-direction:column; align-items:center; line-height:1.15}
+.chip small{font-family:var(--body); font-size:12px; font-weight:700; opacity:.85}
+.chip[aria-pressed="true"]{background:var(--primary); color:var(--on-primary)}
+
+/* Path */
+.banner{border-radius:24px; padding:16px 18px; color:var(--on-hero); display:flex; justify-content:space-between; align-items:center; gap:12px}
+.banner h2{font-size:20px}
+.banner p{margin:2px 0 0; font-weight:700; opacity:.92; font-size:13px}
+.path{display:flex; flex-direction:column; align-items:center; gap:22px; padding:10px 0 4px}
+.node{display:flex; flex-direction:column; align-items:center; gap:6px; width:150px}
+.node .disc{width:76px;height:76px;border-radius:50%; display:grid; place-items:center; color:var(--on-hero); font-family:var(--display); font-weight:800; font-size:26px; box-shadow:0 6px 0 var(--hero-deep); transition:transform .1s}
+.node:active .disc{transform:translateY(4px); box-shadow:0 2px 0 var(--hero-deep)}
+.node .disc svg{width:32px;height:32px}
+.node .nl{font-weight:800; font-size:13px; text-align:center; line-height:1.25}
+.node .stars{display:flex; gap:2px; color:var(--gold)}
+.node .stars svg{width:14px;height:14px}
+.node.locked .disc{background:var(--locked)!important; box-shadow:0 6px 0 var(--line)}
+.node.locked .nl{color:var(--muted)}
+.node.next .disc{outline:5px solid var(--soft); outline-offset:3px; animation:pulse 1.8s ease-in-out infinite}
+@keyframes pulse{50%{outline-offset:7px}}
+
+/* Sheet */
+.backdrop{position:absolute; inset:0; background:rgba(8,16,48,.45); z-index:30}
+.sheet{position:absolute; left:0; right:0; bottom:0; max-height:84%; overflow-y:auto; background:var(--card); border-radius:28px 28px 0 0; padding:22px 20px 22px; z-index:31; display:flex; flex-direction:column; gap:14px; animation:up .25s ease}
+@keyframes up{from{transform:translateY(40px);opacity:.4}}
+.sheet h2{font-size:22px}
+.fiche{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:10px}
+.fiche li{background:var(--app); border-radius:16px; padding:12px 14px; line-height:1.5}
+.fiche li b{color:var(--primary)}
+.tag{display:inline-block; font-size:12px; font-weight:800; padding:3px 9px; border-radius:99px; background:var(--soft); color:var(--primary)}
+
+/* Flashcards */
+.counter{display:flex; justify-content:space-between; align-items:center; font-weight:700; color:var(--muted); font-size:14px}
+.flash{perspective:1200px; height:300px}
+.flash .inner{position:relative; width:100%; height:100%; transition:transform .5s; transform-style:preserve-3d}
+.flash.flipped .inner{transform:rotateY(180deg)}
+.face{position:absolute; inset:0; backface-visibility:hidden; border-radius:28px; padding:24px 22px; display:flex; flex-direction:column; justify-content:center; gap:12px; text-align:center}
+.face.front{background:linear-gradient(160deg,var(--hero1),var(--hero2)); color:var(--on-hero)}
+.face.front h2{font-size:30px}
+.face.front p{margin:0; font-weight:700; opacity:.92}
+.face.front .hint{position:absolute; bottom:16px; left:0; right:0; font-size:13px; opacity:.8}
+.face.back{background:var(--card); transform:rotateY(180deg); text-align:left; justify-content:flex-start; overflow-y:auto}
+.face.back h3{font-size:18px}
+.face.back p{margin:0; line-height:1.55}
+.flash button.cardbtn{width:100%;height:100%;display:block;padding:0}
+.duo{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+.btn.no{background:var(--card); color:var(--bad); box-shadow:0 4px 0 var(--line)}
+.btn.yes{background:var(--ok); box-shadow:0 4px 0 var(--hero-deep)}
+
+/* Articles */
+.search{width:100%; padding:14px 16px; border-radius:18px; border:2px solid var(--line); background:var(--card); color:var(--ink); font:inherit; font-size:16px}
+.art{background:var(--card); border-radius:20px; padding:14px 16px; display:flex; flex-direction:column; gap:6px}
+.art .ah{display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap}
+.art b{font-family:var(--display); font-size:16px}
+.art p{margin:0; line-height:1.5}
+.empty{color:var(--muted); text-align:center; padding:20px}
+
+/* Méthode */
+details.m{background:var(--card); border-radius:22px; padding:4px 18px}
+details.m summary{list-style:none; padding:14px 0; font-family:var(--display); font-weight:700; font-size:18px; display:flex; align-items:center; gap:10px; cursor:pointer}
+details.m summary::-webkit-details-marker{display:none}
+details.m summary::before{content:"▸"; color:var(--primary); transition:transform .2s}
+details.m[open] summary::before{transform:rotate(90deg)}
+details.m ol, details.m ul{margin:0 0 16px; padding-left:22px; display:flex; flex-direction:column; gap:8px; line-height:1.5}
+details.m p{margin:0 0 12px; line-height:1.5; color:var(--muted)}
+.reset{align-self:center; color:var(--muted); font-weight:700; font-size:13px; text-decoration:underline; padding:8px}
+.confirm{background:var(--bad-bg); color:var(--bad); border-radius:18px; padding:14px; display:flex; flex-direction:column; gap:10px; font-weight:700}
+.confirm .row{display:flex; gap:10px}
+.confirm .row button{flex:1; padding:10px; border-radius:12px; font-weight:800; background:var(--card)}
+.confirm .row button.danger{background:var(--bad); color:var(--card)}
+
+/* Lesson */
+.lesson{position:absolute; inset:0; background:var(--app); z-index:40; display:flex; flex-direction:column}
+.lhead{display:flex; align-items:center; gap:12px; padding:20px 18px 8px}
+.lhead .x{width:36px;height:36px;display:grid;place-items:center;color:var(--muted);border-radius:12px}
+.lhead .x svg{width:24px;height:24px}
+.lprog{flex:1; height:16px; background:var(--soft); border-radius:99px; overflow:hidden}
+.lprog i{display:block; height:100%; background:var(--ok); border-radius:99px; transition:width .35s; box-shadow:inset 0 -4px 0 rgba(0,0,0,.08)}
+.hearts{display:flex; align-items:center; gap:4px; color:var(--heart); font-family:var(--display); font-weight:800; font-variant-numeric:tabular-nums}
+.hearts svg{width:24px;height:24px}
+.lbody{flex:1; overflow-y:auto; padding:14px 20px 20px; display:flex; flex-direction:column; gap:16px}
+.lbody .kind{font-weight:800; color:var(--primary); font-size:14px}
+.lbody h2{font-size:21px; line-height:1.35}
+.choices{display:flex; flex-direction:column; gap:10px}
+.choice{text-align:left; background:var(--card); border:2px solid var(--line); border-radius:18px; padding:14px 16px; font-weight:700; line-height:1.4; box-shadow:0 3px 0 var(--line); display:flex; gap:12px; align-items:center}
+.choice .k{flex:none; width:28px;height:28px;border-radius:9px;border:2px solid var(--line);display:grid;place-items:center;font-size:13px;color:var(--muted)}
+.choice[aria-pressed="true"]{border-color:var(--primary); background:var(--soft); box-shadow:0 3px 0 var(--primary)}
+.choice[aria-pressed="true"] .k{border-color:var(--primary); color:var(--primary)}
+.choice.good{border-color:var(--ok); background:var(--ok-bg); box-shadow:0 3px 0 var(--ok)}
+.choice.wrong{border-color:var(--bad); background:var(--bad-bg); box-shadow:0 3px 0 var(--bad)}
+.choices.vf{flex-direction:row}
+.choices.vf .choice{flex:1; justify-content:center; font-family:var(--display); font-size:18px; padding:20px}
+.choices.vf .choice .k{display:none}
+.lfoot{padding:16px 20px 20px; border-top:2px solid var(--line); display:flex; flex-direction:column; gap:12px; background:var(--app)}
+.lfoot.ok{background:var(--ok-bg); border-color:transparent}
+.lfoot.bad{background:var(--bad-bg); border-color:transparent}
+.fb h3{font-size:19px; display:flex; align-items:center; gap:8px}
+.lfoot.ok .fb h3{color:var(--ok)} .lfoot.bad .fb h3{color:var(--bad)}
+.fb p{margin:6px 0 0; line-height:1.5}
+.lfoot.ok .btn{background:var(--ok); box-shadow:0 4px 0 var(--hero-deep)}
+.lfoot.bad .btn{background:var(--bad); box-shadow:0 4px 0 var(--hero-deep)}
+.result{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px; padding:24px; text-align:center}
+.result h2{font-size:28px}
+.result .medal{width:120px;height:120px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(160deg,var(--hero1),var(--hero2));color:var(--on-hero)}
+.result .medal svg{width:60px;height:60px}
+.rstats{display:grid; grid-template-columns:1fr 1fr; gap:12px; width:100%}
+.rstats div{border:2px solid var(--line); border-radius:18px; padding:12px; background:var(--card)}
+.rstats b{display:block; font-family:var(--display); font-size:24px; color:var(--primary)}
+.rstats span{font-size:13px; font-weight:700; color:var(--muted)}
+.result .btn{width:100%}
+
+@media (max-width:380px){ .top h1{font-size:26px} .ring{width:150px;height:150px} .ring .big{font-size:40px} }
+@media (prefers-reduced-motion:reduce){ *{animation:none!important; transition:none!important} }
+</style>
+
+<div class="phone" id="app">
+  <main class="screen" id="screen">
+
+    <!-- ACCUEIL -->
+    <section class="view" data-view="home">
+      <div class="top"><h1>Aujourd’hui</h1><div class="sub" id="date"></div></div>
+      <div class="hero">
+        <div class="ring">
+          <svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="50" fill="none" stroke="var(--hero-soft)" stroke-width="12"/><circle id="ringArc" cx="60" cy="60" r="50" fill="none" stroke="var(--on-hero)" stroke-width="12" stroke-linecap="round" stroke-dasharray="314.16" stroke-dashoffset="314.16" style="transition:stroke-dashoffset .6s"/></svg>
+          <div class="lbl"><div class="big" id="dayXp">0</div><div class="small" id="goalLbl">/ 50 XP du jour</div></div>
+        </div>
+        <div class="stats">
+          <div class="stat"><b><svg viewBox="0 0 24 24" fill="var(--gold)"><path d="M12 2c1 4 5.5 5.5 5.5 10.5a5.5 5.5 0 0 1-11 0c0-2.2 1-3.8 2.2-5 0 2.1 1 3.3 2.1 3.3 0-3.3-1-5.6 1.2-8.8z"/></svg><span id="streak">0</span></b><span>Jours de série</span></div>
+          <div class="stat"><b id="totalXp">0</b><span>XP au total</span></div>
+          <div class="stat"><b id="lessonsDone">0/12</b><span>Leçons finies</span></div>
+        </div>
+      </div>
+      <div class="continue">
+        <div class="eyebrow">Prochaine leçon</div>
+        <h3 id="nextTitle">Formation du contrat</h3>
+        <button class="btn" id="nextBtn">Continuer</button>
+      </div>
+      <div class="eyebrow">Mes matières de L2</div>
+      <div class="subjects" id="subjects"></div>
+      <div class="word">
+        <div class="eyebrow">Le mot du jour</div>
+        <h3 id="wordT"></h3>
+        <p id="wordD"></p>
+      </div>
+    </section>
+
+    <!-- PARCOURS -->
+    <section class="view" data-view="path" hidden>
+      <div class="top"><h1>Parcours</h1><div class="sub">5 questions par leçon</div></div>
+      <div class="chips" id="pathChips"></div>
+      <div class="banner" id="banner"></div>
+      <div class="path" id="path"></div>
+    </section>
+
+    <!-- ARRÊTS -->
+    <section class="view" data-view="arrets" hidden>
+      <div class="top"><h1>Grands arrêts</h1><div class="sub">Touchez la carte</div></div>
+      <div class="chips" id="arretChips"></div>
+      <div class="counter"><span id="arretPos"></span><span id="arretKnown"></span></div>
+      <div class="flash" id="flash">
+        <button class="cardbtn" id="flipBtn" aria-label="Retourner la carte">
+          <div class="inner">
+            <div class="face front"><span class="tag" id="fTag"></span><h2 id="fName"></h2><p id="fRef"></p><div class="hint">Touchez pour voir l’apport</div></div>
+            <div class="face back"><span class="tag" id="bTag"></span><h3 id="bName"></h3><p id="bTxt"></p></div>
+          </div>
+        </button>
+      </div>
+      <div class="duo"><button class="btn no" id="againBtn">À revoir</button><button class="btn yes" id="knowBtn">Je sais</button></div>
+    </section>
+
+    <!-- ARTICLES -->
+    <section class="view" data-view="codes" hidden>
+      <div class="top"><h1>Articles clés</h1><div class="sub" id="artCount"></div></div>
+      <input class="search" id="q" type="search" placeholder="Chercher : 1240, dol, légitime défense…" autocomplete="off">
+      <div class="chips" id="artChips"></div>
+      <div class="view" id="arts" style="gap:12px"></div>
+    </section>
+
+    <!-- MÉTHODE -->
+    <section class="view" data-view="method" hidden>
+      <div class="top"><h1>Méthode</h1><div class="sub">Ce qui fait les points</div></div>
+      <div id="methods" class="view" style="gap:12px"></div>
+      <button class="reset" id="resetBtn">Remettre ma progression à zéro</button>
+      <div class="confirm" id="confirmBox" hidden>Tout effacer (XP, série, leçons, arrêts) ?
+        <div class="row"><button id="cancelReset">Annuler</button><button class="danger" id="doReset">Effacer</button></div>
+      </div>
+    </section>
+  </main>
+
+  <nav class="nav" id="nav">
+    <button data-go="home" aria-current="page"><svg class="i" viewBox="0 0 24 24"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>Accueil</button>
+    <button data-go="path"><svg class="i" viewBox="0 0 24 24"><circle cx="6" cy="19" r="2"/><circle cx="18" cy="5" r="2"/><path d="M8 19h8a3 3 0 0 0 0-6H8a3 3 0 0 1 0-6h8"/></svg>Parcours</button>
+    <button data-go="arrets"><svg class="i" viewBox="0 0 24 24"><path d="M12 3v18M7 21h10M5 7h14M5 7l-3 6a3 3 0 0 0 6 0zM19 7l-3 6a3 3 0 0 0 6 0z"/></svg>Arrêts</button>
+    <button data-go="codes"><svg class="i" viewBox="0 0 24 24"><path d="M4 19V5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2 2 2 0 0 0 2 2h13M8 7h7M8 11h7"/></svg>Articles</button>
+    <button data-go="method"><svg class="i" viewBox="0 0 24 24"><path d="M4 20l4-1 11-11-3-3L5 16zM14 6l3 3"/></svg>Méthode</button>
+  </nav>
+
+  <div id="overlay"></div>
+</div>
+
+<script>
+/* ---------- CONTENU ---------- */
+const M = [
+ {id:"ctr", name:"Droit des contrats", short:"Contrats", sem:"L2 · S3 · Obligations", color:"var(--c1)", letter:"C", units:[
+  {id:"ctr1", title:"Formation du contrat", fiche:[
+   "<b>Art. 1101 C. civ.</b> Le contrat est un accord de volontés destiné à créer, modifier, transmettre ou éteindre des obligations.",
+   "<b>Réforme :</b> ordonnance du 10 février 2016, en vigueur le 1er octobre 2016, ratifiée par la loi du 20 avril 2018.",
+   "<b>Art. 1128 :</b> trois conditions de validité : consentement, capacité, contenu licite et certain. La « cause » a disparu du texte.",
+   "<b>Offre et acceptation :</b> entre absents, le contrat est conclu quand l’acceptation <b>parvient</b> à l’offrant (art. 1121, théorie de la réception).",
+   "<b>Pourparlers (1112) :</b> libres, mais une rupture fautive engage la responsabilité extracontractuelle. On ne répare pas la perte des gains attendus du contrat non conclu.",
+   "<b>Promesse unilatérale (1124) :</b> la rétractation du promettant pendant le délai d’option n’empêche pas la formation du contrat promis. Fin de la jurisprudence Consorts Cruz (1993)."],
+   q:[
+   {t:"qcm",q:"Quel texte a réformé le droit des contrats ?",a:["L’ordonnance du 10 février 2016","La loi du 5 juillet 1985","La loi Fauchon du 10 juillet 2000","L’ordonnance du 23 mars 2006"],c:0,x:"Ordonnance du 10 février 2016, ratifiée par la loi du 20 avril 2018."},
+   {t:"qcm",q:"Selon l’art. 1128, quelles sont les conditions de validité du contrat ?",a:["Consentement, capacité, contenu licite et certain","Consentement, capacité, objet, cause","Accord, forme écrite, prix","Capacité, cause licite, bonne foi"],c:0,x:"Le quadriptyque de l’ancien art. 1108 (avec objet et cause) a été remplacé par ces trois conditions."},
+   {t:"vf",q:"Entre absents, le contrat est formé dès l’envoi de l’acceptation.",a:["Vrai","Faux"],c:1,x:"Faux : art. 1121, le contrat est conclu dès que l’acceptation parvient à l’offrant."},
+   {t:"qcm",q:"Le promettant se rétracte avant la levée de l’option. Que se passe-t-il ?",a:["Le contrat promis est quand même formé","Le bénéficiaire n’obtient que des dommages-intérêts","La promesse est nulle","Le juge choisit librement"],c:0,x:"Art. 1124 al. 2 : la révocation n’empêche pas la formation du contrat promis."},
+   {t:"vf",q:"Le devoir d’information précontractuel (art. 1112-1) porte sur l’estimation de la valeur de la prestation.",a:["Vrai","Faux"],c:1,x:"Faux : le texte exclut expressément l’estimation de la valeur de la prestation."}]},
+  {id:"ctr2", title:"Vices du consentement", fiche:[
+   "<b>Erreur (1132) :</b> sur les qualités essentielles de la prestation ou du cocontractant, et seulement si elle est excusable.",
+   "<b>Erreur sur la valeur (1136)</b> et <b>sur les motifs (1135)</b> : pas de nullité, sauf stipulation (motifs) ou dol.",
+   "<b>Dol (1137) :</b> manœuvres, mensonges ou réticence intentionnelle d’une information décisive. L’erreur provoquée par un dol est toujours excusable (1139).",
+   "<b>Violence (1140) :</b> contrainte qui fait craindre un mal considérable. <b>Abus de l’état de dépendance (1143)</b> assimilé à la violence.",
+   "<b>Sanction :</b> nullité <b>relative</b> (1131), action dans les 5 ans à compter de la découverte de l’erreur ou du dol (1144)."],
+   q:[
+   {t:"qcm",q:"Une erreur sur la valeur du bien vendu, sans dol, entraîne-t-elle la nullité ?",a:["Non, elle n’est pas une cause de nullité","Oui, toujours","Oui, si le prix est supérieur de 7/12","Oui, si elle est excusable"],c:0,x:"Art. 1136 : l’erreur sur la valeur n’est pas une cause de nullité."},
+   {t:"qcm",q:"Quel article consacre la réticence dolosive ?",a:["Art. 1137 al. 2","Art. 1240","Art. 1171","Art. 1195"],c:0,x:"La dissimulation intentionnelle d’une information dont on sait le caractère déterminant est un dol (1137 al. 2)."},
+   {t:"vf",q:"La nullité pour vice du consentement est une nullité absolue.",a:["Vrai","Faux"],c:1,x:"Faux : elle protège un intérêt privé, c’est une nullité relative (art. 1131)."},
+   {t:"qcm",q:"L’abus de l’état de dépendance est prévu à l’article…",a:["1143","1112","1221","1242"],c:0,x:"Art. 1143, rattaché à la violence."},
+   {t:"vf",q:"L’erreur provoquée par un dol est toujours excusable.",a:["Vrai","Faux"],c:0,x:"Vrai : art. 1139, et elle est une cause de nullité même sur la valeur ou un simple motif."}]},
+  {id:"ctr3", title:"Exécution et inexécution", fiche:[
+   "<b>Force obligatoire (1103)</b> et <b>bonne foi (1104)</b>, d’ordre public, de la négociation à l’exécution.",
+   "<b>Effet relatif (1199) :</b> le contrat ne crée d’obligations qu’entre les parties.",
+   "<b>Imprévision (1195) :</b> changement imprévisible rendant l’exécution excessivement onéreuse → renégociation, puis révision ou résolution par le juge. Rupture avec <i>Canal de Craponne</i> (1876).",
+   "<b>Clause qui prive de sa substance l’obligation essentielle :</b> réputée non écrite (1170), codification de <i>Chronopost</i> (1996).",
+   "<b>Art. 1217, cinq sanctions :</b> exception d’inexécution, exécution forcée en nature, réduction du prix, résolution, réparation.",
+   "<b>Force majeure (1218) :</b> événement échappant au contrôle du débiteur, imprévisible à la conclusion, irrésistible."],
+   q:[
+   {t:"qcm",q:"Quel arrêt refusait au juge le pouvoir de réviser un contrat pour imprévision ?",a:["Canal de Craponne (1876)","Chronopost (1996)","Blanco (1873)","Jand’heur (1930)"],c:0,x:"Civ. 6 mars 1876, abandonné par l’art. 1195."},
+   {t:"qcm",q:"Laquelle n’est PAS une sanction de l’inexécution listée à l’art. 1217 ?",a:["La nullité","La réduction du prix","L’exception d’inexécution","La résolution"],c:0,x:"La nullité sanctionne la formation du contrat, pas son exécution."},
+   {t:"qcm",q:"La solution Chronopost est aujourd’hui codifiée à l’article…",a:["1170","1104","1231-1","1353"],c:0,x:"Art. 1170 : toute clause qui prive de sa substance l’obligation essentielle est réputée non écrite."},
+   {t:"vf",q:"L’art. 1218 exige expressément un événement « extérieur » au débiteur.",a:["Vrai","Faux"],c:1,x:"Faux : le texte parle d’un événement « échappant au contrôle du débiteur »."},
+   {t:"qcm",q:"Quand l’exécution forcée en nature peut-elle être écartée ?",a:["Impossibilité ou disproportion manifeste pour un débiteur de bonne foi","Dès que le débiteur le demande","Jamais","Seulement entre commerçants"],c:0,x:"Art. 1221."}]}
+ ]},
+ {id:"rc", name:"Responsabilité civile", short:"Resp. civile", sem:"L2 · S4 · Obligations", color:"var(--c2)", letter:"R", units:[
+  {id:"rc1", title:"Fait personnel", fiche:[
+   "<b>Art. 1240 (ex-1382) :</b> faute + dommage + lien de causalité. <b>Art. 1241 :</b> négligence ou imprudence.",
+   "<b>Faute objective :</b> un enfant en bas âge peut commettre une faute même sans discernement (Ass. plén. 9 mai 1984, <i>Lemaire</i> et <i>Derguini</i>).",
+   "<b>Préjudice :</b> certain, direct, personnel, légitime. La perte de chance est réparable.",
+   "<b>Principe de réparation intégrale :</b> tout le préjudice, rien que le préjudice.",
+   "<b>Non-cumul :</b> entre cocontractants, la victime ne peut pas choisir la voie délictuelle.",
+   "<b>Tiers au contrat :</b> il peut invoquer un manquement contractuel qui lui cause un dommage (Ass. plén. 6 oct. 2006, <i>Boot shop</i> ; confirmé le 13 janv. 2020, affaire des sucreries de Bois-Rouge et du Gol, à La Réunion)."],
+   q:[
+   {t:"qcm",q:"L’ancien article 1382 est devenu l’article…",a:["1240","1103","1242","1217"],c:0,x:"Renumérotation de 2016 : 1382 → 1240, 1383 → 1241, 1384 → 1242."},
+   {t:"vf",q:"Un enfant de 5 ans privé de discernement ne peut pas commettre de faute civile.",a:["Vrai","Faux"],c:1,x:"Faux : depuis Lemaire et Derguini (1984), la faute est appréciée objectivement."},
+   {t:"qcm",q:"Quel arrêt permet au tiers d’invoquer un manquement contractuel qui lui a causé un dommage ?",a:["Boot shop (Ass. plén. 2006)","Franck (1941)","Nicolo (1989)","Perdereau (1986)"],c:0,x:"Ass. plén. 6 oct. 2006, réaffirmé le 13 janv. 2020."},
+   {t:"vf",q:"Entre cocontractants, la victime peut choisir la responsabilité délictuelle si elle lui est plus favorable.",a:["Vrai","Faux"],c:1,x:"Faux : règle du non-cumul (ou de non-option)."},
+   {t:"qcm",q:"Quel principe gouverne l’indemnisation ?",a:["La réparation intégrale","Les dommages-intérêts punitifs","Le forfait légal","La proportion à la faute"],c:0,x:"On replace la victime dans la situation où elle serait sans le dommage."}]},
+  {id:"rc2", title:"Fait des choses", fiche:[
+   "<b>Art. 1242 al. 1 :</b> on répond des choses que l’on a sous sa garde. Découverte avec <i>Teffaine</i> (Civ. 16 juin 1896).",
+   "<b>Jand’heur (Ch. réunies, 13 févr. 1930) :</b> présomption de responsabilité, renversée seulement par une cause étrangère.",
+   "<b>Franck (Ch. réunies, 2 déc. 1941) :</b> le gardien a l’usage, la direction et le contrôle de la chose.",
+   "<b>Garde de la structure / du comportement :</b> arrêt <i>Oxygène liquide</i> (Civ. 2e, 5 janv. 1956).",
+   "<b>Chose inerte :</b> la victime doit prouver son rôle actif (position ou état anormal).",
+   "<b>Accidents de la circulation :</b> loi Badinter du 5 juillet 1985, régime autonome (véhicule terrestre à moteur impliqué). La force majeure est inopposable aux victimes."],
+   q:[
+   {t:"qcm",q:"Selon l’arrêt Franck, la garde se définit par…",a:["L’usage, la direction et le contrôle","La propriété de la chose","La détention matérielle","La faute du gardien"],c:0,x:"Ch. réunies, 2 déc. 1941 : garde matérielle, pas juridique."},
+   {t:"qcm",q:"Quel arrêt pose la présomption de responsabilité du gardien ?",a:["Jand’heur (1930)","Blieck (1991)","Cadot (1889)","Costedoat (2000)"],c:0,x:"Ch. réunies, 13 févr. 1930."},
+   {t:"vf",q:"Un piéton renversé par une voiture agit sur le fondement de l’art. 1242 al. 1.",a:["Vrai","Faux"],c:1,x:"Faux : la loi du 5 juillet 1985 s’applique, elle est exclusive."},
+   {t:"qcm",q:"Quel arrêt distingue garde de la structure et garde du comportement ?",a:["Oxygène liquide (1956)","Teffaine (1896)","Mercier (1936)","Bertrand (1997)"],c:0,x:"Civ. 2e, 5 janv. 1956."},
+   {t:"qcm",q:"Ce qui exonère totalement le gardien :",a:["La force majeure","L’absence de faute","La bonne foi","Le fait que la chose soit inerte"],c:0,x:"La faute de la victime n’exonère que partiellement, sauf si elle présente les caractères de la force majeure."}]},
+  {id:"rc3", title:"Fait d’autrui", fiche:[
+   "<b>Blieck (Ass. plén. 29 mars 1991) :</b> principe général de responsabilité du fait d’autrui pour qui accepte d’organiser et contrôler à titre permanent le mode de vie d’autrui.",
+   "<b>Parents (1242 al. 4) :</b> le simple fait causal de l’enfant suffit (<i>Fullenwarth</i> 1984 ; <i>Levert</i>, Civ. 2e, 10 mai 2001).",
+   "<b>Bertrand (Civ. 2e, 19 févr. 1997) :</b> responsabilité de plein droit des parents, exonération par force majeure ou faute de la victime uniquement.",
+   "<b>Commettants (1242 al. 5) :</b> <i>Costedoat</i> (Ass. plén. 25 févr. 2000), le préposé qui agit dans les limites de sa mission n’engage pas sa responsabilité envers les tiers.",
+   "<b>Cousin (Ass. plén. 14 déc. 2001) :</b> l’immunité tombe en cas d’infraction pénale intentionnelle.",
+   "<b>Abus de fonction :</b> hors des fonctions, sans autorisation et à des fins étrangères (Ass. plén. 19 mai 1988)."],
+   q:[
+   {t:"qcm",q:"Quel arrêt dégage un principe général de responsabilité du fait d’autrui ?",a:["Blieck (1991)","Blanco (1873)","Lemonnier (1918)","Canal de Craponne (1876)"],c:0,x:"Ass. plén. 29 mars 1991, à propos d’une association accueillant des handicapés mentaux."},
+   {t:"qcm",q:"Depuis Bertrand (1997), la responsabilité des parents est…",a:["De plein droit","Pour faute prouvée","Pour faute présumée simple","Subsidiaire"],c:0,x:"Seule la force majeure ou la faute de la victime peut les exonérer."},
+   {t:"qcm",q:"L’arrêt Costedoat (2000) pose…",a:["L’immunité du préposé agissant dans les limites de sa mission","La responsabilité des parents","La garde de la structure","Le principe de légalité"],c:0,x:"Ass. plén. 25 févr. 2000."},
+   {t:"vf",q:"Pour engager la responsabilité des parents, une faute de l’enfant doit être prouvée.",a:["Vrai","Faux"],c:1,x:"Faux : un fait causal suffit (Levert, 2001)."},
+   {t:"qcm",q:"Selon Cousin (2001), l’immunité du préposé cède lorsque…",a:["Il a commis une infraction pénale intentionnelle","Il est mineur","Le commettant est insolvable","Il a agi de nuit"],c:0,x:"Ass. plén. 14 déc. 2001."}]}
+ ]},
+ {id:"adm", name:"Droit administratif", short:"Administratif", sem:"L2 · S3–S4", color:"var(--c3)", letter:"A", units:[
+  {id:"adm1", title:"Juridiction administrative", fiche:[
+   "<b>Séparation des autorités :</b> loi des 16-24 août 1790 et décret du 16 fructidor an III.",
+   "<b>Loi du 24 mai 1872 :</b> justice déléguée, le Conseil d’État juge au nom du peuple français.",
+   "<b>Blanco (TC, 8 févr. 1873) :</b> la responsabilité de l’État pour ses services publics obéit à des règles spéciales, compétence administrative.",
+   "<b>Cadot (CE, 13 déc. 1889) :</b> fin de la théorie du ministre-juge.",
+   "<b>Conseil constitutionnel, 23 janv. 1987 :</b> valeur constitutionnelle du noyau dur de compétence du juge administratif.",
+   "<b>Organisation :</b> tribunaux administratifs, cours administratives d’appel, Conseil d’État. Le Tribunal des conflits règle les conflits de compétence."],
+   q:[
+   {t:"qcm",q:"Quel arrêt fonde l’autonomie de la responsabilité administrative ?",a:["Blanco (TC 1873)","Nicolo (CE 1989)","Benjamin (CE 1933)","Franck (1941)"],c:0,x:"TC, 8 févr. 1873, l’enfant renversé par un wagonnet de la manufacture des tabacs."},
+   {t:"qcm",q:"L’arrêt Cadot (1889) met fin…",a:["À la théorie du ministre-juge","À la loi-écran","À la justice déléguée","Au dualisme juridictionnel"],c:0,x:"Le CE devient juge de droit commun en premier ressort."},
+   {t:"qcm",q:"Quelle décision donne valeur constitutionnelle au noyau de compétence du juge administratif ?",a:["CC, 23 janv. 1987, Conseil de la concurrence","CE, Sarran 1998","TC, Pelletier 1873","CE, Dame Lamotte 1950"],c:0,x:"Annulation ou réformation des décisions prises en vertu de prérogatives de puissance publique."},
+   {t:"vf",q:"Le Tribunal des conflits tranche les conflits de compétence entre ordre judiciaire et ordre administratif.",a:["Vrai","Faux"],c:0,x:"Vrai."},
+   {t:"qcm",q:"La séparation des autorités administratives et judiciaires remonte à…",a:["La loi des 16-24 août 1790","La Constitution de 1958","La loi du 24 mai 1872","Le Code civil de 1804"],c:0,x:"Interdiction faite aux juges judiciaires de troubler les opérations des corps administratifs."}]},
+  {id:"adm2", title:"Légalité et sources", fiche:[
+   "<b>Hiérarchie :</b> bloc de constitutionnalité, traités (art. 55 C.), lois, principes généraux du droit, règlements, actes individuels.",
+   "<b>Nicolo (CE Ass., 20 oct. 1989) :</b> le juge administratif contrôle la conformité d’une loi même postérieure à un traité.",
+   "<b>Sarran (CE Ass., 30 oct. 1998) :</b> la Constitution reste au sommet de l’ordre interne.",
+   "<b>PGD :</b> <i>Aramu</i> (CE Ass., 1945), valeur infra-législative et supra-décrétale.",
+   "<b>Contrôle :</b> <i>Gomel</i> (1914) qualification juridique des faits ; <i>Camino</i> (1916) exactitude matérielle des faits.",
+   "<b>Danthony (CE Ass., 23 déc. 2011) :</b> un vice de procédure n’entraîne l’annulation que s’il a pu influencer la décision ou a privé d’une garantie."],
+   q:[
+   {t:"qcm",q:"Quel arrêt accepte le contrôle de conventionnalité d’une loi postérieure au traité ?",a:["Nicolo (1989)","Arrighi (1936)","Terrier (1903)","Cadot (1889)"],c:0,x:"CE Ass., 20 oct. 1989."},
+   {t:"qcm",q:"Quel arrêt illustre la consécration des principes généraux du droit ?",a:["Aramu (1945)","Couitéas (1923)","Blanco (1873)","Danthony (2011)"],c:0,x:"Notamment les droits de la défense."},
+   {t:"qcm",q:"Quel arrêt « neutralise » certains vices de procédure ?",a:["Danthony (2011)","Gomel (1914)","Sarran (1998)","Narcy (1963)"],c:0,x:"CE Ass., 23 déc. 2011."},
+   {t:"vf",q:"L’arrêt Sarran fait primer les traités sur la Constitution dans l’ordre interne.",a:["Vrai","Faux"],c:1,x:"Faux : c’est l’inverse, la Constitution reste au sommet."},
+   {t:"qcm",q:"L’arrêt Gomel (1914) consacre le contrôle…",a:["De la qualification juridique des faits","De l’exactitude matérielle des faits","De la proportionnalité","De conventionnalité"],c:0,x:"La place Beauvau constituait-elle une perspective monumentale ?"}]},
+  {id:"adm3", title:"Service public, police, responsabilité", fiche:[
+   "<b>Service public :</b> <i>Terrier</i> (1903) ; <i>Bac d’Eloka</i> (TC, 22 janv. 1921) crée le SPIC ; <i>Narcy</i> (1963) puis <i>APREI</i> (2007) pour les personnes privées.",
+   "<b>Lois de Rolland :</b> continuité, égalité, mutabilité.",
+   "<b>Ordre public :</b> sécurité, tranquillité, salubrité (art. L. 2212-2 CGCT) + dignité de la personne humaine (<i>Commune de Morsang-sur-Orge</i>, CE Ass., 27 oct. 1995).",
+   "<b>Benjamin (CE, 19 mai 1933) :</b> la mesure de police doit être nécessaire, adaptée et proportionnée.",
+   "<b>Fautes :</b> <i>Pelletier</i> (TC 1873) distingue faute personnelle et faute de service ; <i>Lemonnier</i> (1918) admet le cumul.",
+   "<b>Sans faute :</b> <i>Cames</i> (1895) risque ; <i>Couitéas</i> (1923) rupture d’égalité devant les charges publiques ; <i>La Fleurette</i> (1938) fait des lois."],
+   q:[
+   {t:"qcm",q:"Quel arrêt fait naître la notion de SPIC ?",a:["Bac d’Eloka (1921)","Terrier (1903)","Benjamin (1933)","Jamart (1936)"],c:0,x:"TC, 22 janv. 1921, Société commerciale de l’Ouest africain."},
+   {t:"qcm",q:"Quel arrêt intègre la dignité humaine à l’ordre public ?",a:["Morsang-sur-Orge (1995)","Benjamin (1933)","Aramu (1945)","Blieck (1991)"],c:0,x:"L’interdiction du « lancer de nain »."},
+   {t:"qcm",q:"L’arrêt Benjamin (1933) pose…",a:["Le contrôle de proportionnalité des mesures de police","La fin du ministre-juge","Le cumul des responsabilités","La notion de SPIC"],c:0,x:"Une interdiction générale de réunion n’était pas nécessaire."},
+   {t:"vf",q:"L’arrêt Couitéas consacre une responsabilité sans faute pour rupture d’égalité devant les charges publiques.",a:["Vrai","Faux"],c:0,x:"Vrai : CE, 30 nov. 1923."},
+   {t:"qcm",q:"Quel arrêt distingue faute personnelle et faute de service ?",a:["Pelletier (TC 1873)","Lemonnier (1918)","La Fleurette (1938)","Nicolo (1989)"],c:0,x:"Lemonnier admettra ensuite le cumul de responsabilités."}]}
+ ]},
+ {id:"pen", name:"Droit pénal général", short:"Pénal", sem:"L2 · S3–S4", color:"var(--c4)", letter:"P", units:[
+  {id:"pen1", title:"La loi pénale", fiche:[
+   "<b>Légalité criminelle :</b> art. 8 DDHC et art. 111-3 C. pén. Pas d’infraction ni de peine sans texte.",
+   "<b>Classification tripartite (111-1) :</b> crimes, délits, contraventions. Crimes et délits fixés par la loi, contraventions par le règlement (111-2).",
+   "<b>Interprétation stricte (111-4).</b> Pas d’analogie défavorable.",
+   "<b>Application dans le temps :</b> non-rétroactivité de la loi plus sévère, rétroactivité de la loi plus douce (112-1 ; CC 19-20 janv. 1981).",
+   "<b>Lois de procédure :</b> application immédiate (112-2).",
+   "<b>Territorialité (113-2) :</b> l’infraction est réputée commise en France dès qu’un de ses faits constitutifs y a eu lieu."],
+   q:[
+   {t:"qcm",q:"La classification tripartite des infractions figure à l’article…",a:["111-1 C. pén.","121-3 C. pén.","1240 C. civ.","122-5 C. pén."],c:0,x:"Crimes, délits et contraventions."},
+   {t:"qcm",q:"Les contraventions sont définies par…",a:["Le règlement","La loi","La jurisprudence","La coutume"],c:0,x:"Art. 111-2 C. pén., combiné avec les art. 34 et 37 de la Constitution."},
+   {t:"vf",q:"Une loi pénale plus douce s’applique aux faits commis avant son entrée en vigueur et non définitivement jugés.",a:["Vrai","Faux"],c:0,x:"Vrai : rétroactivité in mitius (112-1 al. 3)."},
+   {t:"qcm",q:"Comment s’interprète la loi pénale ?",a:["Strictement","Largement","Par analogie","Selon l’équité"],c:0,x:"Art. 111-4."},
+   {t:"qcm",q:"Les lois de procédure pénale s’appliquent…",a:["Immédiatement, en principe","Seulement aux faits futurs","Jamais aux procès en cours","Rétroactivement au jour des faits"],c:0,x:"Art. 112-2."}]},
+  {id:"pen2", title:"L’infraction", fiche:[
+   "<b>Trois éléments :</b> légal, matériel, moral.",
+   "<b>Tentative (121-5) :</b> commencement d’exécution + absence de désistement volontaire. Toujours punissable pour les crimes, pour les délits seulement si un texte le prévoit, jamais pour les contraventions (121-4).",
+   "<b>Infraction impossible :</b> <i>Perdereau</i> (Crim. 16 janv. 1986), tentative de meurtre sur un cadavre punissable.",
+   "<b>Élément moral (121-3) :</b> pas de crime ou délit sans intention, sauf imprudence, négligence ou mise en danger délibérée prévues par la loi.",
+   "<b>Loi Fauchon (10 juill. 2000) :</b> l’auteur indirect personne physique n’est responsable qu’en cas de faute délibérée ou caractérisée.",
+   "<b>Complicité (121-7) :</b> aide ou assistance, provocation, instructions. Un fait principal punissable est nécessaire. Le complice est puni comme auteur (121-6)."],
+   q:[
+   {t:"qcm",q:"Quel arrêt admet la tentative de meurtre sur un cadavre ?",a:["Perdereau (1986)","Laboube (1956)","Blanco (1873)","Costedoat (2000)"],c:0,x:"Crim. 16 janv. 1986 : infraction impossible punissable."},
+   {t:"qcm",q:"La tentative de délit est punissable…",a:["Seulement si la loi le prévoit","Toujours","Jamais","Seulement pour les mineurs"],c:0,x:"Art. 121-4 C. pén."},
+   {t:"qcm",q:"Quelle loi exige une faute qualifiée pour l’auteur indirect d’un délit non intentionnel ?",a:["Loi Fauchon (2000)","Loi Badinter (1985)","Loi de 1790","Loi du 24 mai 1872"],c:0,x:"Faute délibérée ou faute caractérisée (121-3 al. 4)."},
+   {t:"vf",q:"Le désistement volontaire avant la consommation exclut la tentative punissable.",a:["Vrai","Faux"],c:0,x:"Vrai : l’échec doit être dû à des circonstances indépendantes de la volonté de l’auteur."},
+   {t:"qcm",q:"Comment est puni le complice ?",a:["Comme auteur","De la moitié de la peine","D’une amende seulement","Il n’est pas puni"],c:0,x:"Art. 121-6."}]},
+  {id:"pen3", title:"Causes d’irresponsabilité", fiche:[
+   "<b>121-1 :</b> nul n’est responsable pénalement que de son propre fait. <b>121-2 :</b> les personnes morales (sauf l’État) répondent des infractions commises pour leur compte par leurs organes ou représentants.",
+   "<b>Légitime défense (122-5) :</b> atteinte injustifiée et actuelle ; défense nécessaire, simultanée, proportionnée. Présomptions à l’art. 122-6.",
+   "<b>État de nécessité (122-7)</b> et <b>ordre de la loi / commandement de l’autorité légitime (122-4)</b>, sauf acte manifestement illégal.",
+   "<b>Trouble psychique (122-1) :</b> abolition du discernement = irresponsabilité ; altération = responsabilité, peine atténuée.",
+   "<b>Contrainte (122-2)</b> irrésistible et <b>erreur de droit (122-3)</b> invincible.",
+   "<b>Mineurs :</b> Code de la justice pénale des mineurs (2021), présomption simple de non-discernement avant 13 ans."],
+   q:[
+   {t:"qcm",q:"Laquelle est une condition de la légitime défense ?",a:["La proportionnalité de la riposte","La préméditation","L’absence de témoin","L’accord du parquet"],c:0,x:"Art. 122-5 : défense nécessaire, simultanée et proportionnée."},
+   {t:"qcm",q:"L’abolition du discernement au moment des faits entraîne…",a:["L’irresponsabilité pénale","Une peine réduite","Une peine doublée","Une simple amende"],c:0,x:"Art. 122-1 al. 1. L’altération, elle, laisse la personne punissable."},
+   {t:"qcm",q:"Que prévoit le CJPM pour un mineur de moins de 13 ans ?",a:["Une présomption simple de non-discernement","Une irresponsabilité absolue","Une responsabilité identique à l’adulte","Rien de particulier"],c:0,x:"Code de la justice pénale des mineurs, en vigueur depuis le 30 sept. 2021."},
+   {t:"vf",q:"L’État peut être déclaré pénalement responsable.",a:["Vrai","Faux"],c:1,x:"Faux : art. 121-2, l’État est exclu."},
+   {t:"qcm",q:"Pour exonérer, l’erreur de droit doit être…",a:["Invincible","Commune","De bonne foi","Excusable"],c:0,x:"Art. 122-3."}]}
+ ]}
+];
+
+const ARRETS = [
+ ["ctr","Canal de Craponne","Civ. 6 mars 1876","Refus de réviser un contrat pour imprévision, même si les circonstances ont changé. Abandonné par l’art. 1195 issu de la réforme de 2016."],
+ ["ctr","Chronopost","Com. 22 oct. 1996","La clause limitative qui contredit la portée de l’obligation essentielle est réputée non écrite. Codifié à l’art. 1170."],
+ ["ctr","Faurecia 2","Com. 29 juin 2010","Seule est réputée non écrite la clause limitative qui vide de toute substance l’obligation essentielle, en tenant compte de l’économie du contrat."],
+ ["ctr","Consorts Cruz","Civ. 3e, 15 déc. 1993","La rétractation du promettant avant la levée d’option ne donnait lieu qu’à des dommages-intérêts. Solution renversée par l’art. 1124."],
+ ["ctr","Mercier","Civ. 20 mai 1936","Le contrat médical crée une obligation de soins consciencieux, attentifs et conformes aux données acquises de la science : obligation de moyens."],
+ ["rc","Teffaine","Civ. 16 juin 1896","Découverte d’un principe de responsabilité du fait des choses dans l’ancien art. 1384 al. 1 (explosion d’un remorqueur)."],
+ ["rc","Jand’heur","Ch. réunies, 13 févr. 1930","Présomption de responsabilité du gardien, qui ne cède que devant la cause étrangère. Peu importe que la chose soit actionnée par la main de l’homme."],
+ ["rc","Franck","Ch. réunies, 2 déc. 1941","Le propriétaire d’une voiture volée n’en est plus gardien : la garde suppose l’usage, la direction et le contrôle."],
+ ["rc","Lemaire / Derguini","Ass. plén. 9 mai 1984","Faute objective : un enfant en bas âge peut commettre une faute sans avoir de discernement."],
+ ["rc","Blieck","Ass. plén. 29 mars 1991","Principe général de responsabilité du fait d’autrui pour ceux qui organisent et contrôlent à titre permanent le mode de vie d’autrui."],
+ ["rc","Bertrand","Civ. 2e, 19 févr. 1997","Responsabilité de plein droit des parents : seule la force majeure ou la faute de la victime les exonère."],
+ ["rc","Levert","Civ. 2e, 10 mai 2001","Pas besoin d’une faute de l’enfant : son fait causal suffit pour engager ses parents."],
+ ["rc","Costedoat","Ass. plén. 25 févr. 2000","Le préposé qui agit sans excéder les limites de sa mission n’engage pas sa responsabilité à l’égard des tiers."],
+ ["rc","Cousin","Ass. plén. 14 déc. 2001","Le préposé condamné pour une infraction pénale intentionnelle engage sa responsabilité civile, même sur ordre du commettant."],
+ ["rc","Boot shop","Ass. plén. 6 oct. 2006","Le tiers peut invoquer un manquement contractuel dès lors qu’il lui a causé un dommage. Confirmé le 13 janv. 2020 (Bois-Rouge, La Réunion)."],
+ ["adm","Blanco","TC, 8 févr. 1873","La responsabilité de l’État du fait de ses services publics relève de règles spéciales et du juge administratif."],
+ ["adm","Pelletier","TC, 30 juill. 1873","Distinction entre faute personnelle de l’agent (juge judiciaire) et faute de service (juge administratif)."],
+ ["adm","Cadot","CE, 13 déc. 1889","Fin de la théorie du ministre-juge : le Conseil d’État devient juge de droit commun."],
+ ["adm","Terrier","CE, 6 févr. 1903","Les litiges liés à la gestion d’un service public local relèvent du juge administratif."],
+ ["adm","Bac d’Eloka","TC, 22 janv. 1921","Un service public géré dans les mêmes conditions qu’une entreprise privée relève du droit privé : naissance du SPIC."],
+ ["adm","Couitéas","CE, 30 nov. 1923","Responsabilité sans faute de l’État pour rupture de l’égalité devant les charges publiques."],
+ ["adm","Benjamin","CE, 19 mai 1933","Les mesures de police doivent être nécessaires, adaptées et proportionnées à la menace pour l’ordre public."],
+ ["adm","Aramu","CE Ass., 26 oct. 1945","Consécration des principes généraux du droit, ici les droits de la défense."],
+ ["adm","Nicolo","CE Ass., 20 oct. 1989","Le juge administratif écarte une loi, même postérieure, contraire à un traité (art. 55 C.)."],
+ ["adm","Morsang-sur-Orge","CE Ass., 27 oct. 1995","Le respect de la dignité de la personne humaine est une composante de l’ordre public."],
+ ["adm","Sarran","CE Ass., 30 oct. 1998","La suprématie des traités ne s’applique pas, dans l’ordre interne, aux dispositions constitutionnelles."],
+ ["adm","Danthony","CE Ass., 23 déc. 2011","Un vice de procédure n’annule l’acte que s’il a pu exercer une influence ou a privé d’une garantie."],
+ ["pen","Laboube","Crim. 13 déc. 1956","La responsabilité pénale suppose que l’auteur ait compris et voulu son acte : exigence du discernement."],
+ ["pen","Perdereau","Crim. 16 janv. 1986","Tentative de meurtre punissable même si la victime était déjà morte : l’infraction impossible est punissable."],
+ ["pen","CC, 19-20 janv. 1981","Décision « Sécurité et liberté »","Valeur constitutionnelle de la rétroactivité de la loi pénale plus douce, tirée de l’art. 8 DDHC."]
+];
+
+const ARTS = [
+ ["ctr","Art. 1101 C. civ.","Définition du contrat : accord de volontés destiné à créer, modifier, transmettre ou éteindre des obligations."],
+ ["ctr","Art. 1103 C. civ.","Force obligatoire : les contrats légalement formés tiennent lieu de loi à ceux qui les ont faits (ex-1134 al. 1)."],
+ ["ctr","Art. 1104 C. civ.","Bonne foi dans la négociation, la formation et l’exécution. Disposition d’ordre public."],
+ ["ctr","Art. 1112-1 C. civ.","Devoir précontractuel d’information sur ce qui est déterminant pour le consentement, hors estimation de la valeur."],
+ ["ctr","Art. 1124 C. civ.","Promesse unilatérale : la révocation pendant le délai d’option n’empêche pas la formation du contrat promis."],
+ ["ctr","Art. 1128 C. civ.","Conditions de validité : consentement, capacité, contenu licite et certain."],
+ ["ctr","Art. 1132 C. civ.","Erreur sur les qualités essentielles de la prestation ou du cocontractant, si elle est excusable."],
+ ["ctr","Art. 1137 C. civ.","Dol : manœuvres, mensonges ou dissimulation intentionnelle d’une information déterminante."],
+ ["ctr","Art. 1143 C. civ.","Abus de l’état de dépendance : assimilé à la violence."],
+ ["ctr","Art. 1170 C. civ.","Clause qui prive de sa substance l’obligation essentielle : réputée non écrite."],
+ ["ctr","Art. 1171 C. civ.","Contrat d’adhésion : la clause créant un déséquilibre significatif est réputée non écrite."],
+ ["ctr","Art. 1195 C. civ.","Imprévision : renégociation, puis révision ou résolution par le juge."],
+ ["ctr","Art. 1199 C. civ.","Effet relatif : le contrat ne crée d’obligations qu’entre les parties."],
+ ["ctr","Art. 1217 C. civ.","Les cinq sanctions de l’inexécution, cumulables si elles sont compatibles."],
+ ["ctr","Art. 1218 C. civ.","Force majeure : événement échappant au contrôle du débiteur, imprévisible et irrésistible."],
+ ["rc","Art. 1240 C. civ.","Responsabilité du fait personnel : tout fait de l’homme qui cause un dommage oblige son auteur fautif à le réparer (ex-1382)."],
+ ["rc","Art. 1241 C. civ.","Responsabilité pour négligence ou imprudence (ex-1383)."],
+ ["rc","Art. 1242 C. civ.","Fait des choses (al. 1), des parents (al. 4), des commettants (al. 5) (ex-1384)."],
+ ["rc","Loi du 5 juill. 1985","Loi Badinter : indemnisation des victimes d’accidents de la circulation impliquant un véhicule terrestre à moteur."],
+ ["adm","Art. 55 Constitution","Les traités régulièrement ratifiés ont une autorité supérieure à celle des lois, sous réserve de réciprocité."],
+ ["adm","Art. 34 et 37 Constitution","Domaine de la loi (34) et domaine réglementaire autonome (37)."],
+ ["adm","Art. L. 2212-2 CGCT","Police municipale : bon ordre, sûreté, sécurité et salubrité publiques."],
+ ["pen","Art. 111-1 C. pén.","Classification tripartite : crimes, délits, contraventions."],
+ ["pen","Art. 111-3 C. pén.","Principe de légalité des délits et des peines."],
+ ["pen","Art. 111-4 C. pén.","La loi pénale est d’interprétation stricte."],
+ ["pen","Art. 112-1 C. pén.","Non-rétroactivité de la loi plus sévère, rétroactivité de la loi plus douce."],
+ ["pen","Art. 121-1 C. pén.","Nul n’est responsable pénalement que de son propre fait."],
+ ["pen","Art. 121-2 C. pén.","Responsabilité pénale des personnes morales, à l’exclusion de l’État."],
+ ["pen","Art. 121-3 C. pén.","Élément moral : intention, imprudence, mise en danger délibérée ; faute qualifiée de l’auteur indirect."],
+ ["pen","Art. 121-5 C. pén.","Tentative : commencement d’exécution interrompu par des circonstances indépendantes de la volonté de l’auteur."],
+ ["pen","Art. 121-7 C. pén.","Complicité par aide ou assistance, provocation ou instructions."],
+ ["pen","Art. 122-1 C. pén.","Trouble psychique : abolition (irresponsabilité) ou altération (peine atténuée) du discernement."],
+ ["pen","Art. 122-5 C. pén.","Légitime défense des personnes et des biens."],
+ ["pen","Art. 122-7 C. pén.","État de nécessité face à un danger actuel ou imminent."]
+];
+
+const WORDS = [
+ ["Synallagmatique","Se dit d’un contrat où les parties s’obligent réciproquement les unes envers les autres (art. 1106), comme la vente."],
+ ["Exception d’inexécution","Droit de refuser d’exécuter sa propre obligation tant que l’autre partie n’exécute pas la sienne (art. 1219)."],
+ ["Ultra petita","Le juge statue au-delà de ce qui lui était demandé. C’est un cas d’ouverture à recours."],
+ ["Excès de pouvoir","Recours en annulation d’un acte administratif illégal. Ouvert même sans texte (Dame Lamotte, 1950)."],
+ ["Autorité de la chose jugée","Ce qui a été jugé ne peut plus être remis en cause entre les mêmes parties, pour le même objet et la même cause."],
+ ["In mitius","Se dit de la loi pénale plus douce, qui rétroagit aux faits non définitivement jugés."],
+ ["Prétoire","Lieu où l’on rend la justice. Par extension, l’ensemble des juridictions."],
+ ["Quasi-contrat","Fait purement volontaire dont résulte un engagement (art. 1300) : gestion d’affaires, paiement de l’indu, enrichissement injustifié."],
+ ["Garde","Pouvoir d’usage, de direction et de contrôle sur une chose (Franck, 1941)."],
+ ["Infra petita","Le juge omet de statuer sur un chef de demande."],
+ ["Obiter dictum","Passage d’une décision dit « en passant », qui n’est pas nécessaire à la solution."],
+ ["Revirement","Changement de solution par une juridiction sur une question qu’elle avait déjà tranchée."],
+ ["Attendu de principe","Phrase qui énonce la règle de droit appliquée, souvent en tête d’un arrêt de cassation."],
+ ["SPIC","Service public industriel et commercial, soumis pour l’essentiel au droit privé (Bac d’Eloka, 1921)."]
+];
+
+const METHODS = [
+ {t:"La fiche d’arrêt", intro:"La base de tout commentaire et de toute révision de TD. Dans cet ordre :", ol:[
+  "<b>Faits</b> : qui a fait quoi, qualifiés juridiquement (« un vendeur », « un salarié »), sans dates inutiles.",
+  "<b>Procédure</b> : première instance, appel, pourvoi. Qui a saisi qui, et ce qu’ont décidé les juges du fond.",
+  "<b>Prétentions</b> : les arguments du demandeur au pourvoi (les moyens).",
+  "<b>Problème de droit</b> : une question juridique générale, posée sans les noms des parties.",
+  "<b>Solution</b> : rejet ou cassation, visa, et l’attendu de principe ou la motivation clé."]},
+ {t:"Le commentaire d’arrêt", intro:"On explique le sens de la solution, sa valeur et sa portée.", ol:[
+  "Accroche, puis fiche d’arrêt intégrée à l’introduction.",
+  "Annonce de plan en deux parties (I / II), chacune en deux sous-parties (A / B).",
+  "Un plan classique : I. Le sens de la solution, II. Sa valeur et sa portée. Adaptez les titres à l’arrêt.",
+  "Chaque sous-partie part d’un mot ou d’une phrase de l’arrêt. Pas de dissertation déguisée.",
+  "Situez l’arrêt : jurisprudence antérieure, réforme de 2016, doctrine, revirements."]},
+ {t:"Le cas pratique", intro:"Le syllogisme juridique, appliqué à chaque problème.", ol:[
+  "<b>Qualification des faits</b> : repérez chaque problème juridique séparément.",
+  "<b>Majeure</b> : énoncez la règle (article + jurisprudence).",
+  "<b>Mineure</b> : appliquez la règle aux faits précis de l’énoncé.",
+  "<b>Conclusion</b> : répondez clairement à la question posée, même en cas de doute.",
+  "Envisagez les arguments de l’autre partie et les solutions alternatives."]},
+ {t:"La dissertation", intro:"Un raisonnement construit autour d’une problématique.", ol:[
+  "Définissez chaque terme du sujet et délimitez-le (dans le temps, dans l’espace, dans les matières).",
+  "Dégagez l’intérêt du sujet, puis une problématique qui n’est pas une simple reformulation.",
+  "Plan en deux parties et deux sous-parties, avec des titres qui affirment quelque chose.",
+  "Chapeaux et transitions : le correcteur doit suivre le fil sans effort.",
+  "Pas de conclusion obligatoire en droit ; si vous en faites une, ouvrez le sujet."]},
+ {t:"Pièges classiques", ul:[
+  "Citer l’ancien numéro d’article (1382, 1134) sans le nouveau (1240, 1103).",
+  "Confondre nullité relative et nullité absolue.",
+  "Oublier la loi Badinter dès qu’un véhicule à moteur est impliqué.",
+  "Écrire « la Cour de cassation juge les faits » : elle juge le droit.",
+  "En administratif, confondre police administrative (prévenir) et police judiciaire (réprimer).",
+  "Mettre plus de deux parties ou des titres vides (« I. Le principe, II. Les exceptions » sans contenu)."]}
+];
+
+/* ---------- ÉTAT ---------- */
+const KEY="jurisL2.v1";
+const def=()=>({xp:0,day:null,dayXp:0,streak:0,last:null,done:{},known:{},goal:50});
+let S=(()=>{try{const r=JSON.parse(localStorage.getItem(KEY));if(r)return Object.assign(def(),r)}catch(e){}return def()})();
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
+const dkey=d=>d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate();
+const today=()=>dkey(new Date());
+const yesterday=()=>{const d=new Date();d.setDate(d.getDate()-1);return dkey(d)};
+function rollDay(){if(S.day!==today()){S.day=today();S.dayXp=0}}
+function addXp(n){rollDay();S.xp+=n;S.dayXp+=n;const t=today();if(S.last!==t){S.streak=(S.last===yesterday())?S.streak+1:1;S.last=t}save()}
+const curStreak=()=>(S.last===today()||S.last===yesterday())?S.streak:0;
+
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const mById=id=>M.find(m=>m.id===id);
+const ICON={
+ star:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3 6.5 7 .8-5.2 4.8 1.4 7L12 17.6 5.8 21l1.4-7L2 9.3l7-.8z"/></svg>',
+ lock:'<svg class="i" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>',
+ check:'<svg class="i" viewBox="0 0 24 24" style="stroke-width:3"><path d="M5 12l5 5 9-10"/></svg>',
+ book:'<svg class="i" viewBox="0 0 24 24"><path d="M4 19V5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2 2 2 0 0 0 2 2h13"/></svg>',
+ trophy:'<svg class="i" viewBox="0 0 24 24"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0zM7 6H4a3 3 0 0 0 3 4M17 6h3a3 3 0 0 1-3 4"/></svg>',
+ heart:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-8-5.3-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 5.7-8 11-8 11z"/></svg>',
+ x:'<svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>',
+ retry:'<svg class="i" viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 0 3-6.2M4 4v4h4"/></svg>'
+};
+const unitUnlocked=(m,i)=>i===0||!!S.done[m.units[i-1].id];
+const doneCount=m=>m.units.filter(u=>S.done[u.id]).length;
+const totalUnits=M.reduce((n,m)=>n+m.units.length,0);
+
+/* ---------- NAV ---------- */
+let view="home";
+function go(v){view=v;document.querySelectorAll("[data-view]").forEach(s=>s.hidden=s.dataset.view!==v);
+ document.querySelectorAll("#nav button").forEach(b=>{if(b.dataset.go===v)b.setAttribute("aria-current","page");else b.removeAttribute("aria-current")});
+ $("#screen").scrollTop=0;render()}
+$("#nav").addEventListener("click",e=>{const b=e.target.closest("button");if(b)go(b.dataset.go)});
+
+/* ---------- ACCUEIL ---------- */
+function nextUnit(){for(const m of M){for(let i=0;i<m.units.length;i++){if(!S.done[m.units[i].id]&&unitUnlocked(m,i))return{m,u:m.units[i]}}}return null}
+function renderHome(){
+ rollDay();
+ const d=new Date();$("#date").textContent=d.toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"}).replace(/^./,c=>c.toUpperCase());
+ $("#dayXp").textContent=S.dayXp;$("#goalLbl").textContent="/ "+S.goal+" XP du jour";
+ const p=Math.min(1,S.dayXp/S.goal);$("#ringArc").style.strokeDashoffset=314.16*(1-p);
+ $("#streak").textContent=curStreak();$("#totalXp").textContent=S.xp;
+ $("#lessonsDone").textContent=M.reduce((n,m)=>n+doneCount(m),0)+"/"+totalUnits;
+ const n=nextUnit();
+ if(n){$("#nextTitle").innerHTML=esc(n.u.title)+' <span class="tag" style="vertical-align:middle">'+esc(n.m.short)+'</span>';$("#nextBtn").textContent="Continuer";$("#nextBtn").onclick=()=>startLesson(n.u.id)}
+ else{$("#nextTitle").textContent="Tout le parcours est fini. Révision mixte !";$("#nextBtn").textContent="Réviser";$("#nextBtn").onclick=()=>startLesson("rev-"+M[Math.floor(Math.random()*M.length)].id)}
+ $("#subjects").innerHTML=M.map(m=>{const dc=doneCount(m);return `<button class="subj" data-m="${m.id}"><span class="dot" style="background:${m.color}">${m.letter}</span><h3>${esc(m.name)}</h3><small>${dc}/${m.units.length} leçons · ${esc(m.sem)}</small><div class="bar"><i style="width:${dc/m.units.length*100}%;background:${m.color}"></i></div></button>`}).join("");
+ const w=WORDS[Math.floor(Date.now()/864e5)%WORDS.length];$("#wordT").textContent=w[0];$("#wordD").textContent=w[1];
+}
+$("#subjects").addEventListener("click",e=>{const b=e.target.closest(".subj");if(b){curM=b.dataset.m;go("path")}});
+
+/* ---------- PARCOURS ---------- */
+let curM="ctr";
+function renderPath(){
+ $("#pathChips").innerHTML=M.map(m=>`<button class="chip" aria-pressed="${m.id===curM}" data-m="${m.id}">${esc(m.short)}<small>${doneCount(m)}/${m.units.length}</small></button>`).join("");
+ const m=mById(curM);
+ $("#banner").style.background=m.color;
+ $("#banner").innerHTML=`<div><h2>${esc(m.name)}</h2><p>${esc(m.sem)}</p></div><span class="tag" style="background:var(--card);color:var(--ink)">${doneCount(m)}/${m.units.length}</span>`;
+ const off=[0,60,-60,40];
+ let next=m.units.findIndex((u,i)=>!S.done[u.id]&&unitUnlocked(m,i));
+ let html=m.units.map((u,i)=>{const un=unitUnlocked(m,i),dn=S.done[u.id];const cls=["node",un?"":"locked",i===next?"next":""].join(" ");
+  const stars=dn?`<div class="stars" aria-label="${dn} étoiles sur 3">${[1,2,3].map(k=>k<=dn?ICON.star:'<span style="opacity:.25">'+ICON.star+'</span>').join("")}</div>`:"";
+  return `<button class="${cls}" data-u="${u.id}" ${un?"":'aria-disabled="true"'} style="transform:translateX(${off[i%4]}px)"><span class="disc" style="background:${m.color}">${dn?ICON.check:(un?(i+1):ICON.lock)}</span><span class="nl">${esc(u.title)}</span>${stars}</button>`}).join("");
+ const all=doneCount(m)===m.units.length;
+ html+=`<button class="node ${all?"":"locked"} ${all&&next<0?"":""}" data-rev="${m.id}" ${all?"":'aria-disabled="true"'} style="transform:translateX(${off[m.units.length%4]}px)"><span class="disc" style="background:var(--gold)">${all?ICON.trophy:ICON.lock}</span><span class="nl">Révision de l’unité<br><small style="font-weight:700;color:var(--muted)">8 questions mélangées</small></span></button>`;
+ $("#path").innerHTML=html;
+}
+$("#pathChips").addEventListener("click",e=>{const b=e.target.closest(".chip");if(b){curM=b.dataset.m;renderPath()}});
+$("#path").addEventListener("click",e=>{const b=e.target.closest(".node");if(!b||b.getAttribute("aria-disabled"))return;
+ if(b.dataset.rev)return startLesson("rev-"+b.dataset.rev);openSheet(b.dataset.u)});
+
+function findUnit(id){for(const m of M)for(const u of m.units)if(u.id===id)return{m,u};return null}
+function openSheet(id){const {m,u}=findUnit(id);
+ $("#overlay").innerHTML=`<div class="backdrop" data-close></div><div class="sheet" role="dialog" aria-label="${esc(u.title)}">
+  <span class="tag" style="align-self:flex-start;background:${m.color};color:var(--card)">${esc(m.name)}</span>
+  <h2>${esc(u.title)}</h2><div class="eyebrow">À retenir avant la leçon</div>
+  <ul class="fiche">${u.fiche.map(f=>`<li>${f}</li>`).join("")}</ul>
+  <button class="btn" id="startBtn">Commencer la leçon · +50 XP</button>
+  <button class="btn ghost" data-close>Plus tard</button></div>`;
+ $("#startBtn").onclick=()=>startLesson(id);}
+$("#overlay").addEventListener("click",e=>{if(e.target.closest("[data-close]"))$("#overlay").innerHTML=""});
+
+/* ---------- LEÇON ---------- */
+let L=null;
+function prep(q){if(q.t==="vf")return{...q,choices:q.a,correct:q.c};const o=shuffle(q.a.map((_,i)=>i));return{...q,choices:o.map(i=>q.a[i]),correct:o.indexOf(q.c)}}
+function startLesson(id){
+ let m,u,qs,title;
+ if(id.startsWith("rev-")){m=mById(id.slice(4));qs=shuffle(m.units.flatMap(x=>x.q)).slice(0,8);title="Révision · "+m.short}
+ else{({m,u}=findUnit(id));qs=u.q;title=u.title}
+ L={id,m,title,queue:shuffle(qs).map(prep),total:qs.length,ok:0,hearts:3,miss:0,sel:null,checked:false};
+ renderQ();
+}
+function lessonShell(body,foot,footCls=""){
+ const pct=L.ok/L.total*100;
+ $("#overlay").innerHTML=`<div class="lesson" role="dialog" aria-label="${esc(L.title)}">
+  <div class="lhead"><button class="x" id="quit" aria-label="Quitter la leçon">${ICON.x}</button><div class="lprog"><i style="width:${pct}%"></i></div><div class="hearts" aria-label="${L.hearts} vies">${ICON.heart}${L.hearts}</div></div>
+  <div class="lbody">${body}</div><div class="lfoot ${footCls}">${foot}</div></div>`;
+ $("#quit").onclick=()=>{$("#overlay").innerHTML="";render()};
+}
+function renderQ(){
+ const q=L.queue[0];L.sel=null;L.checked=false;
+ const keys="ABCD";
+ lessonShell(`<div class="kind">${q.t==="vf"?"Vrai ou faux ?":"Choisis la bonne réponse"} · ${esc(L.m.short)}</div><h2>${esc(q.q)}</h2>
+  <div class="choices ${q.t==="vf"?"vf":""}" id="choices">${q.choices.map((c,i)=>`<button class="choice" aria-pressed="false" data-i="${i}"><span class="k">${keys[i]}</span><span>${esc(c)}</span></button>`).join("")}</div>`,
+  `<button class="btn" id="checkBtn" disabled>Vérifier</button>`);
+ $("#choices").onclick=e=>{const b=e.target.closest(".choice");if(!b||L.checked)return;L.sel=+b.dataset.i;
+  document.querySelectorAll(".choice").forEach(x=>x.setAttribute("aria-pressed",x===b));$("#checkBtn").disabled=false};
+ $("#checkBtn").onclick=check;
+}
+function check(){
+ if(L.sel===null)return;L.checked=true;const q=L.queue[0];const good=L.sel===q.correct;
+ const btns=[...document.querySelectorAll(".choice")];btns[q.correct].classList.add("good");if(!good)btns[L.sel].classList.add("wrong");
+ L.queue.shift();
+ if(good)L.ok++;else{L.hearts--;L.miss++;L.queue.push(q)}
+ const foot=$(".lfoot");foot.className="lfoot "+(good?"ok":"bad");
+ foot.innerHTML=`<div class="fb"><h3>${good?ICON.check+" Bien joué !":ICON.x+" Pas tout à fait"}</h3><p>${good?"":"<b>Bonne réponse : "+esc(q.choices[q.correct])+".</b> "}${esc(q.x)}</p></div><button class="btn" id="contBtn">Continuer</button>`;
+ $(".lprog i").style.width=(L.ok/L.total*100)+"%";$(".hearts").innerHTML=ICON.heart+L.hearts;
+ $("#contBtn").focus();
+ $("#contBtn").onclick=()=>{if(L.hearts<=0)return finish(false);if(!L.queue.length)return finish(true);renderQ()};
+}
+function finish(win){
+ let xp,stars=0;
+ if(win){xp=L.total*10+(L.miss===0?20:0);stars=L.miss===0?3:L.miss===1?2:1;if(!L.id.startsWith("rev-"))S.done[L.id]=Math.max(S.done[L.id]||0,stars)}
+ else xp=L.ok*3;
+ addXp(xp);
+ const acc=Math.round(L.ok/(L.ok+L.miss||1)*100);
+ lessonShell(`<div class="result"><div class="medal">${win?ICON.trophy:ICON.retry}</div>
+  <h2>${win?(stars===3?"Sans faute !":"Leçon terminée !"):"Plus de vies"}</h2>
+  <p style="margin:0;color:var(--muted);font-weight:700">${win?esc(L.title)+(stars?" · "+stars+" étoile"+(stars>1?"s":""):""):"Relis la fiche et retente : les erreurs reviennent à la fin."}</p>
+  <div class="rstats"><div><b>+${xp}</b><span>XP gagnés</span></div><div><b>${acc} %</b><span>Précision</span></div></div></div>`,
+  `${win?"":'<button class="btn" id="retry">Réessayer</button>'}<button class="btn ${win?"":"ghost"}" id="endBtn">Terminer</button>`);
+ $(".lhead").style.visibility="hidden";
+ $("#endBtn").onclick=()=>{$("#overlay").innerHTML="";render()};
+ if(!win)$("#retry").onclick=()=>startLesson(L.id);
+}
+
+/* ---------- ARRÊTS ---------- */
+let aFilter="all",aIdx=0;
+const aList=()=>ARRETS.map((a,i)=>({i,m:a[0],n:a[1],r:a[2],t:a[3]})).filter(a=>aFilter==="all"||a.m===aFilter);
+function chipRow(sel,cur,counts){return `<button class="chip" data-f="all" aria-pressed="${cur==="all"}">Tous${counts?`<small>${counts("all")}</small>`:""}</button>`+M.map(m=>`<button class="chip" data-f="${m.id}" aria-pressed="${cur===m.id}">${esc(m.short)}${counts?`<small>${counts(m.id)}</small>`:""}</button>`).join("")}
+function renderArrets(){
+ const L2=aList();if(aIdx>=L2.length)aIdx=0;const a=L2[aIdx];const m=mById(a.m);
+ const cnt=f=>{const l=ARRETS.filter(x=>f==="all"||x[0]===f);return l.filter((x,i)=>S.known[x[1]]).length+"/"+l.length};
+ $("#arretChips").innerHTML=chipRow("a",aFilter,cnt);
+ $("#flash").classList.remove("flipped");
+ $("#fTag").textContent=m.short;$("#fTag").style.cssText=`background:var(--card);color:${m.color}`;
+ $("#fName").textContent=a.n;$("#fRef").textContent=a.r;
+ $("#bTag").textContent=m.short;$("#bTag").style.cssText=`background:${m.color};color:var(--card)`;
+ $("#bName").textContent=a.n+" · "+a.r;$("#bTxt").textContent=a.t;
+ $("#arretPos").textContent="Carte "+(aIdx+1)+" / "+L2.length;
+ $("#arretKnown").innerHTML=(S.known[a.n]?'<span class="tag" style="background:var(--ok-bg);color:var(--ok)">Maîtrisé</span>':'<span class="tag">À apprendre</span>');
+}
+$("#arretChips").addEventListener("click",e=>{const b=e.target.closest(".chip");if(b){aFilter=b.dataset.f;aIdx=0;renderArrets()}});
+$("#flipBtn").onclick=()=>$("#flash").classList.toggle("flipped");
+function nextCard(known){const a=aList()[aIdx];if(known)S.known[a.n]=true;else delete S.known[a.n];if(known)addXp(2);else save();aIdx=(aIdx+1)%aList().length;renderArrets()}
+$("#knowBtn").onclick=()=>nextCard(true);$("#againBtn").onclick=()=>nextCard(false);
+
+/* ---------- ARTICLES ---------- */
+let artF="all";
+function renderArts(){
+ $("#artChips").innerHTML=chipRow("t",artF);
+ const q=$("#q").value.trim().toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"");
+ const list=ARTS.filter(a=>(artF==="all"||a[0]===artF)&&(!q||(a[1]+" "+a[2]).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").includes(q)));
+ $("#artCount").textContent=list.length+" article"+(list.length>1?"s":"");
+ $("#arts").innerHTML=list.length?list.map(a=>{const m=mById(a[0]);return `<div class="art"><div class="ah"><b>${esc(a[1])}</b><span class="tag" style="background:${m.color};color:var(--card)">${esc(m.short)}</span></div><p>${esc(a[2])}</p></div>`}).join(""):'<div class="empty">Aucun article ne correspond. Essayez un numéro ou un mot-clé.</div>';
+}
+$("#q").addEventListener("input",renderArts);
+$("#artChips").addEventListener("click",e=>{const b=e.target.closest(".chip");if(b){artF=b.dataset.f;renderArts()}});
+
+/* ---------- MÉTHODE ---------- */
+$("#methods").innerHTML=METHODS.map((m,i)=>`<details class="m" ${i===0?"open":""}><summary>${m.t}</summary>${m.intro?`<p>${m.intro}</p>`:""}${m.ol?`<ol>${m.ol.map(x=>`<li>${x}</li>`).join("")}</ol>`:`<ul>${m.ul.map(x=>`<li>${x}</li>`).join("")}</ul>`}</details>`).join("");
+$("#resetBtn").onclick=()=>{$("#confirmBox").hidden=false};
+$("#cancelReset").onclick=()=>{$("#confirmBox").hidden=true};
+$("#doReset").onclick=()=>{S=def();save();$("#confirmBox").hidden=true;go("home")};
+
+function render(){({home:renderHome,path:renderPath,arrets:renderArrets,codes:renderArts,method:()=>{}})[view]()}
+go("home");
+</script>
+
+</body></html>
